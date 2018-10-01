@@ -50,20 +50,22 @@ wire [11:0] data4VRAM2VGA;
 wire rst = ~RSTN;
 wire clk50mhz, clk50mhzn, clk25mhz, clk200mhz, clk100mhz;
 wire [31:0] clkdiv;
+wire clkcpu = SW[1] ? clk50mhz : clkdiv[26];
+wire clkio = SW[1] ? clk50mhzn : ~clkdiv[26];
 
 // VGA
 wire [19:0] addr4VGA2VRAM;
 
 
 // pipeline CPU
-PCPU CPU(.clk(clk50mhz), .rst(rst),
+PCPU CPU(.clk(clkcpu), .rst(rst),
     .addrInst(addrInst), .instIn(instIn),
     .addrData(addr4CPU2Bus), .dataIn(data4Bus2CPU),
     .memWE(we4CPU2Bus), .dataOut(data4CPU2Bus));
 
 
 // I/O bus
-IOBus Bus(.clk(clk50mhz), .rst(rst),
+IOBus Bus(.clk(clkcpu), .rst(rst),
     .addr4CPU(addr4CPU2Bus), .data2CPU(data4Bus2CPU),
     .we4CPU(we4CPU2Bus), .data4CPU(data4CPU2Bus),
     .addr2RAM(addr4Bus2RAM), .data4RAM(data4RAM2Bus),
@@ -82,10 +84,10 @@ wire [11:0] addrReprog;
 wire [31:0] dataReprog;
 wire weReprog;
 RAM ram(
-    .clka(clk50mhzn), .wea(0), .addra(addrInst), .dina(0), .douta(Inst),
-    .clkb(clk50mhzn), .web(weReprog), .addrb(addrReprog),
+    .clka(clkio), .wea(0), .addra(addrInst), .dina(0), .douta(Inst),
+    .clkb(clkio), .web(weReprog), .addrb(addrReprog),
     .dinb(dataReprog), .doutb(data4RAM2Bus));
-Reprog reprog(.clkUART(clk100mhz), .clkMem(clk50mhzn),
+Reprog reprog(.clkUART(clk100mhz), .clkMem(clkio),
     .uartRx(UART_RX), .progEN(rst),
     .addrIn(addr4Bus2RAM), .addrOut(addrReprog),
     .dataIn(data4Bus2RAM), .dataOut(dataReprog),
@@ -94,13 +96,13 @@ Reprog reprog(.clkUART(clk100mhz), .clkMem(clk50mhzn),
 
 // VRAM
 VRAM vram(
-    .clka(clk50mhzn), .wea(we4Bus2VRAM), .addra(addr4Bus2VRAM),
+    .clka(clkio), .wea(we4Bus2VRAM), .addra(addr4Bus2VRAM),
     .dina(data4Bus2VRAM), .douta(data4VRAM2Bus),
     .clkb(clk25mhz), .web(0), .addrb(addr4VGA2VRAM), .dinb(0), .doutb(data4VRAM2VGA));
 
 
 // ROM
-ROMs rom(.clk(clk50mhzn), .addr(addr4Bus2ROM), .data(data4ROM2Bus));
+ROMs rom(.clk(clkio), .addr(addr4Bus2ROM), .data(data4ROM2Bus));
 
 
 // clock
@@ -110,6 +112,11 @@ ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 
 
 // 7-segment LED
+wire [31:0] data2seg;
+MUX8T1 seg(.S(SW[7:5]),
+    .I0(instIn), .I1(addrInst), .I2(data4Bus2CPU), .I3(addr4CPU2Bus),
+    .I4(data4CPU2Bus), .I5(scancode), .I6(seg7led), .I7(),
+    .O(data2seg));
 Seg7LED seg7(.clk(clk100mhz), .rst(rst),
     .start(clkdiv[21]), .text(SW[0]),
     .flash(0), .hexs(data2seg), .points(0), .LES(0),
