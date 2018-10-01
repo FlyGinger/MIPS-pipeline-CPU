@@ -24,7 +24,7 @@ module RegFile(
 reg [31:0] register[1:31];
 integer i;
 always @ (posedge clk or posedge rst)  begin
-    if (rst == 1'b1) begin
+    if (rst) begin
         for (i = 1; i < 32; i = i + 1) begin
             register[i] <= 32'b0;
         end

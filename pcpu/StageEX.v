@@ -13,8 +13,7 @@ module StageEX(
     // clock and reset
     input wire clk, input wire rst,
     // pc and instruction (won't use in this module but for debug)
-    input wire [31:0] id_pc, input wire [31:0] id_inst,
-    output reg [31:0] ex_pc, output reg [31:0] ex_inst,
+    input wire [31:0] id_pc,
     // alu
     input wire [`ALU_OP_WIDTH] id_op,
     input wire [31:0] id_opa, input wire [31:0] id_opb,
@@ -37,8 +36,6 @@ always @ (posedge clk)
 begin
     if (rst)
     begin
-        ex_pc <= 0;
-        ex_inst <= 0;
         ex_op <= 0;
         ex_opa <= 0;
         ex_opb <= 0;
@@ -51,8 +48,6 @@ begin
     end
     else
     begin
-        ex_pc <= id_pc;
-        ex_inst <= id_inst;
         ex_op <= id_op;
         ex_opa <= id_opa;
         ex_opb <= id_opb;

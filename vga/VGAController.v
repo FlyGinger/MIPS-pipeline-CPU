@@ -45,7 +45,7 @@ VGA M0(
     .G(VGA_G),
     .B(VGA_B));
 
-ROM_fonttable(
+ROM_fonttable M1(
     .addra(addr2ROM),
     .clka(clkhigh),
     .douta(data4ROM));

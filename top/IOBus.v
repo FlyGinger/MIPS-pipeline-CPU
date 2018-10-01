@@ -16,7 +16,7 @@ module IOBus(
     output wire [11:0] addr2RAM, input wire [31:0] data4RAM,
     output wire we2RAM, output wire [31:0] data2RAM,
     // VRAM
-    output wire [31:0] addr2VRAM, input wire [11:0] data4VRAM,
+    output wire [18:0] addr2VRAM, input wire [11:0] data4VRAM,
     output wire we2VRAM, output wire [11:0] data2VRAM,
     // ROM
     output wire [31:0] addr2ROM, input wire [31:0] data4ROM,
@@ -62,14 +62,14 @@ end
 
 // RAM
 assign addr2RAM = addr4CPU[13:2];
-assign we2RAM = (addr4CPU[31:28] == 4'h0) ? we4CPU : 0;
+assign we2RAM = (addr4CPU[31:28] == 4'h0) ? we4CPU : 1'b0;
 assign data2RAM = data4CPU;
 
 
 // VRAM
-assign addr2VRAM = addr4CPU[21:0];
-assign we2VRAM = (addr4CPU[31:28] == 4'h1) ? we4CPU : 0;
-assign data2VRAM = data4CPU;
+assign addr2VRAM = addr4CPU[20:2];
+assign we2VRAM = (addr4CPU[31:28] == 4'h1) ? we4CPU : 1'b0;
+assign data2VRAM = data4CPU[11:0];
 
 
 // ROM

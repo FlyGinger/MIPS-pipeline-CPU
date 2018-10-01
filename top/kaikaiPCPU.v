@@ -27,11 +27,12 @@ module kaikaiPCPU(
 
 
 // CPU signals
-wire [31:0] addrInst, instIn;
-wire [31:0] addr4CPU2Bus, data4CPU2Bus, we4CPU2Bus;
+wire [31:0] addrInst;
+wire [31:0] addr4CPU2Bus, data4CPU2Bus;
+wire we4CPU2Bus;
 // IO Bus
 wire [11:0] addr4Bus2RAM;
-wire [19:0] addr4Bus2VRAM;
+wire [18:0] addr4Bus2VRAM;
 wire we4Bus2RAM, we4Bus2VRAM;
 wire [31:0] data4Bus2CPU;
 wire [31:0] data4RAM2Bus, data4Bus2RAM;
@@ -43,7 +44,7 @@ wire [11:0] forecolor, backcolor;
 wire KBDread, KBDready;
 wire [7:0] scancode;
 // RAM
-wire [31:0] Inst;
+wire [31:0] instIn;
 // VRAM
 wire [11:0] data4VRAM2VGA;
 // clock
@@ -54,7 +55,7 @@ wire clkcpu = SW[1] ? clk50mhz : clkdiv[26];
 wire clkio = SW[1] ? clk50mhzn : ~clkdiv[26];
 
 // VGA
-wire [19:0] addr4VGA2VRAM;
+wire [18:0] addr4VGA2VRAM;
 
 
 // pipeline CPU
@@ -84,7 +85,7 @@ wire [11:0] addrReprog;
 wire [31:0] dataReprog;
 wire weReprog;
 RAM ram(
-    .clka(clkio), .wea(0), .addra(addrInst), .dina(0), .douta(Inst),
+    .clka(clkio), .wea(1'b0), .addra(addrInst[13:2]), .dina(32'b0), .douta(instIn),
     .clkb(clkio), .web(weReprog), .addrb(addrReprog),
     .dinb(dataReprog), .doutb(data4RAM2Bus));
 Reprog reprog(.clkUART(clk100mhz), .clkMem(clkio),
@@ -98,7 +99,7 @@ Reprog reprog(.clkUART(clk100mhz), .clkMem(clkio),
 VRAM vram(
     .clka(clkio), .wea(we4Bus2VRAM), .addra(addr4Bus2VRAM),
     .dina(data4Bus2VRAM), .douta(data4VRAM2Bus),
-    .clkb(clk25mhz), .web(0), .addrb(addr4VGA2VRAM), .dinb(0), .doutb(data4VRAM2VGA));
+    .clkb(clk25mhz), .web(1'b0), .addrb(addr4VGA2VRAM), .dinb(12'b0), .doutb(data4VRAM2VGA));
 
 
 // ROM
@@ -115,11 +116,11 @@ ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 wire [31:0] data2seg;
 MUX8T1 seg(.S(SW[7:5]),
     .I0(instIn), .I1(addrInst), .I2(data4Bus2CPU), .I3(addr4CPU2Bus),
-    .I4(data4CPU2Bus), .I5(scancode), .I6(seg7led), .I7(),
+    .I4(data4CPU2Bus), .I5({24'b0, scancode}), .I6(seg7led), .I7(),
     .O(data2seg));
 Seg7LED seg7(.clk(clk100mhz), .rst(rst),
     .start(clkdiv[21]), .text(SW[0]),
-    .flash(0), .hexs(data2seg), .points(0), .LES(0),
+    .flash(1'b0), .hexs(data2seg), .points(8'b0), .LES(8'b0),
     .segclk(SEGCLK), .segdt(SEGDT), .segen(SEGEN), .segclr(SEGCLR));
 
 

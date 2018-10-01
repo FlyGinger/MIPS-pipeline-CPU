@@ -36,7 +36,6 @@ wire [`RF_SRC_WIDTH] id_rfSrc;
 wire [`BRANCH_WIDTH] id_branchType;
 wire [31:0] id_branchDst;
 // stage EX signals
-wire [31:0] ex_pc, ex_inst;
 wire [31:0] ex_opResult;
 wire ex_memWE;
 wire [31:0] ex_memData;
@@ -46,7 +45,6 @@ wire [`RF_SRC_WIDTH] ex_rfSrc;
 wire ex_branchPermit;
 wire [31:0] ex_branchDst;
 // stage MEM signals
-wire [31:0] mem_pc, mem_inst;
 wire [31:0] mem_opResult;
 wire [31:0] mem_memData;
 wire mem_rfWE;
@@ -89,7 +87,7 @@ BranchCtrl BC(.pc(if_pc),
 
 // stage EX
 StageEX stageEX(.clk(clk), .rst(rst),
-    .id_pc(id_pc), .id_inst(id_inst), .ex_pc(ex_pc), .ex_inst(ex_inst),
+    .id_pc(id_pc),
     .id_op(id_op), .id_opa(id_opa), .id_opb(id_opb), .ex_opResult(ex_opResult),
     .id_memWE(id_memWE), .ex_memWE(ex_memWE),
     .id_memData(id_memData), .ex_memData(ex_memData),
@@ -103,7 +101,6 @@ StageEX stageEX(.clk(clk), .rst(rst),
 assign addrData = mem_opResult;
 assign dataOut = mem_memData;
 StageMEM stageMEM(.clk(clk), .rst(rst),
-    .ex_pc(ex_pc), .ex_inst(ex_inst), .mem_pc(mem_pc), .mem_inst(mem_inst),
     .ex_opResult(ex_opResult), .mem_opResult(mem_opResult),
     .ex_memWE(ex_memWE), .mem_memWE(memWE),
     .ex_memData(ex_memData), .mem_memData(mem_memData),
@@ -112,7 +109,7 @@ StageMEM stageMEM(.clk(clk), .rst(rst),
 
 
 // stage WB
-MUX2T1 WB(.S(mem_rfSrc),
+MUX2T1 WB(.S(mem_rfSrc[0]),
     .I0(mem_opResult), .I1(dataIn),
     .O(wb_rfSrcData));
 
