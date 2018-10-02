@@ -51,22 +51,22 @@ wire [11:0] data4VRAM2VGA;
 wire rst = ~RSTN;
 wire clk50mhz, clk50mhzn, clk25mhz, clk200mhz, clk100mhz;
 wire [31:0] clkdiv;
-wire clkcpu = SW[1] ? clk50mhz : clkdiv[26];
-wire clkio = SW[1] ? clk50mhzn : ~clkdiv[26];
+// wire clkcpu = SW[1] ? clk50mhz : clkdiv[28];
+// wire clkio = SW[1] ? clk50mhzn : ~clkdiv[28];
 
 // VGA
 wire [18:0] addr4VGA2VRAM;
 
 
 // pipeline CPU
-PCPU CPU(.clk(clkcpu), .rst(rst),
+PCPU CPU(.clk(clk50mhz), .rst(rst),
     .addrInst(addrInst), .instIn(instIn),
     .addrData(addr4CPU2Bus), .dataIn(data4Bus2CPU),
     .memWE(we4CPU2Bus), .dataOut(data4CPU2Bus));
 
 
 // I/O bus
-IOBus Bus(.clk(clkcpu), .rst(rst),
+IOBus Bus(.clk(clk50mhz), .rst(rst),
     .addr4CPU(addr4CPU2Bus), .data2CPU(data4Bus2CPU),
     .we4CPU(we4CPU2Bus), .data4CPU(data4CPU2Bus),
     .addr2RAM(addr4Bus2RAM), .data4RAM(data4RAM2Bus),
@@ -85,10 +85,10 @@ wire [11:0] addrReprog;
 wire [31:0] dataReprog;
 wire weReprog;
 RAM ram(
-    .clka(clkio), .wea(1'b0), .addra(addrInst[13:2]), .dina(32'b0), .douta(instIn),
-    .clkb(clkio), .web(weReprog), .addrb(addrReprog),
+    .clka(clk50mhzn), .wea(1'b0), .addra(addrInst[13:2]), .dina(32'b0), .douta(instIn),
+    .clkb(clk50mhzn), .web(weReprog), .addrb(addrReprog),
     .dinb(dataReprog), .doutb(data4RAM2Bus));
-Reprog reprog(.clkUART(clk100mhz), .clkMem(clkio),
+Reprog reprog(.clkUART(clk100mhz), .clkMem(clk50mhzn),
     .uartRx(UART_RX), .progEN(rst),
     .addrIn(addr4Bus2RAM), .addrOut(addrReprog),
     .dataIn(data4Bus2RAM), .dataOut(dataReprog),
@@ -97,17 +97,17 @@ Reprog reprog(.clkUART(clk100mhz), .clkMem(clkio),
 
 // VRAM
 VRAM vram(
-    .clka(clkio), .wea(we4Bus2VRAM), .addra(addr4Bus2VRAM),
+    .clka(clk50mhzn), .wea(we4Bus2VRAM), .addra(addr4Bus2VRAM),
     .dina(data4Bus2VRAM), .douta(data4VRAM2Bus),
-    .clkb(clk25mhz), .web(1'b0), .addrb(addr4VGA2VRAM), .dinb(12'b0), .doutb(data4VRAM2VGA));
+    .clkb(clk50mhz), .web(1'b0), .addrb(addr4VGA2VRAM), .dinb(12'b0), .doutb(data4VRAM2VGA));
 
 
 // ROM
-ROMs rom(.clk(clkio), .addr(addr4Bus2ROM), .data(data4ROM2Bus));
+ROMs rom(.clk(clk50mhzn), .addr(addr4Bus2ROM), .data(data4ROM2Bus));
 
 
 // clock
-ClkWiz clkwiz(.clk_P(CLK_200MHZ_P), .clk_N(CLK_200MHZ_N),
+ClkWiz clkwiz(.clk_in1_p(CLK_200MHZ_P), .clk_in1_n(CLK_200MHZ_N),
     .clk200mhz(clk200mhz), .clk100mhz(clk100mhz), .clk50mhz(clk50mhz), .clk50mhzn(clk50mhzn), .clk25mhz(clk25mhz));
 ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 
@@ -116,9 +116,9 @@ ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 wire [31:0] data2seg;
 MUX8T1 seg(.S(SW[7:5]),
     .I0(instIn), .I1(addrInst), .I2(data4Bus2CPU), .I3(addr4CPU2Bus),
-    .I4(data4CPU2Bus), .I5({24'b0, scancode}), .I6(seg7led), .I7(),
+    .I4(data4CPU2Bus), .I5(forecolor), .I6(backcolor), .I7(seg7led),
     .O(data2seg));
-Seg7LED seg7(.clk(clk100mhz), .rst(rst),
+Seg7LED seg7(.clk(clk50mhz), .rst(rst),
     .start(clkdiv[21]), .text(SW[0]),
     .flash(1'b0), .hexs(data2seg), .points(8'b0), .LES(8'b0),
     .segclk(SEGCLK), .segdt(SEGDT), .segen(SEGEN), .segclr(SEGCLR));

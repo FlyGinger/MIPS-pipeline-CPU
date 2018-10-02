@@ -32,6 +32,7 @@ module StageEX(
 
 reg [`ALU_OP_WIDTH] ex_op;
 reg [31:0] ex_opa, ex_opb;
+reg [`BRANCH_WIDTH] ex_branchType;
 always @ (posedge clk)
 begin
     if (rst)
@@ -45,6 +46,7 @@ begin
         ex_rfDst <= 0;
         ex_rfSrc <= 0;
         ex_branchDst <= 0;
+        ex_branchType <= 0;
     end
     else
     begin
@@ -57,6 +59,7 @@ begin
         ex_rfDst <= id_rfDst;
         ex_rfSrc <= id_rfSrc;
         ex_branchDst <= id_branchDst;
+        ex_branchType <= id_branchType;
     end
 end
 
@@ -80,7 +83,7 @@ end
 wire zero = ~(|ex_opResult);
 always @ *
 begin
-    case(id_branchType[2:0])
+    case(ex_branchType[2:0])
     'b000: ex_branchPermit <= 0;
     'b001: ex_branchPermit <= zero;
     'b010: ex_branchPermit <= ~ zero;

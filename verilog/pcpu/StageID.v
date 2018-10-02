@@ -20,7 +20,7 @@ module StageID(
     output reg [31:0] id_opa, output reg [31:0] id_opb,
     // memory
     output wire id_memWE,
-    output reg [31:0] id_memData,
+    output wire [31:0] id_memData,
     // register files
     input wire [31:0] rfRs, input wire [31:0] rfRt,
     output wire id_rfWE, output reg [4:0] id_rfDst,
@@ -38,13 +38,11 @@ begin
     begin
         id_pc <= 0;
         id_inst <= 0;
-        id_memData <= 0;
     end
     else
     begin
         id_pc <= if_pc;
         id_inst <= if_inst;
-        id_memData <= rfRt;
     end
 end
 
@@ -60,6 +58,7 @@ InstDecoder ID(.inst(id_inst),
     .rfWE(id_rfWE), .rfDst(rfDst), .rfSrc(id_rfSrc),
     .memWE(id_memWE),
     .branch(id_branchType));
+assign id_memData = rfRt;
 
 
 // secondary decoding

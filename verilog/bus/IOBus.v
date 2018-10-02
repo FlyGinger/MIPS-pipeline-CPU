@@ -84,17 +84,17 @@ begin
         seg7led <= 0;
         VGAmode <= 0;
         forecolor <= 0;
-        backcolor <= 12'hfff;
+        backcolor <= 0;
     end
     else
     begin
-        if (addr4CPU == 32'hf0000004 && we4CPU)
+        if ((addr4CPU == 32'hf0000004) && we4CPU)
             seg7led <= data4CPU;
-        if (addr4CPU == 32'hf0000008 && we4CPU)
+        if ((addr4CPU == 32'hf0000008) && we4CPU)
             VGAmode <= data4CPU[0];
-        if (addr4CPU == 32'hf000000c && we4CPU)
+        if ((addr4CPU == 32'hf000000c) && we4CPU)
             forecolor <= data4CPU[11:0];
-        if (addr4CPU == 32'hf0000010 && we4CPU)
+        if ((addr4CPU == 32'hf0000010) && we4CPU)
             backcolor <= data4CPU[11:0];
     end
 end
