@@ -54,19 +54,29 @@ wire [`RF_SRC_WIDTH] mem_rfSrc;
 wire [31:0] wb_rfSrcData;
 
 
+// hazard
+wire ex_hazard = ((id_inst[25:21] != 5'b0) && (id_inst[25:21] == ex_rfDst))
+        || ((id_inst[20:16] != 5'b0) && (id_inst[20:16] == ex_rfDst));
+wire mem_hazard = ((id_inst[25:21] != 5'b0) && (id_inst[25:21] == mem_rfDst))
+        || ((id_inst[20:16] != 5'b0) && (id_inst[20:16] == mem_rfDst));
+wire id_stall = ex_hazard | mem_hazard | ex_branchPermit;
+wire if_stall = ex_hazard | mem_hazard;
+wire ex_flush = id_stall;
+
+
 // stage IF
 always @ (posedge clk)
 begin
     if (rst)
         if_pc <= `PC_INITIAL;
-    else
+    else if (!if_stall)
         if_pc <= pcNext;
 end
 assign addrInst = if_pc;
 
 
 // stage ID
-StageID stageID(.clk(clk), .rst(rst),
+StageID stageID(.clk(clk), .rst(rst), .stall(id_stall),
     .if_pc(if_pc), .if_inst(instIn),
     .id_pc(id_pc), .id_inst(id_inst),
     .id_op(id_op), .id_opa(id_opa), .id_opb(id_opb),
@@ -86,8 +96,7 @@ BranchCtrl BC(.pc(if_pc),
 
 
 // stage EX
-StageEX stageEX(.clk(clk), .rst(rst),
-    .id_pc(id_pc),
+StageEX stageEX(.clk(clk), .rst(rst), .flush(ex_flush),
     .id_op(id_op), .id_opa(id_opa), .id_opb(id_opb), .ex_opResult(ex_opResult),
     .id_memWE(id_memWE), .ex_memWE(ex_memWE),
     .id_memData(id_memData), .ex_memData(ex_memData),

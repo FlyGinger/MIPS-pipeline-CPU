@@ -10,8 +10,8 @@
 `include "PCPUParam.vh"
 
 module StageID(
-    // clock and reset
-    input wire clk, input wire rst,
+    // clock, reset and stall
+    input wire clk, input wire rst, input wire stall,
     // pc and instruction
     input wire [31:0] if_pc, input wire [31:0] if_inst,
     output reg [31:0] id_pc, output reg [31:0] id_inst,
@@ -39,7 +39,7 @@ begin
         id_pc <= 0;
         id_inst <= 0;
     end
-    else
+    else if (!stall)
     begin
         id_pc <= if_pc;
         id_inst <= if_inst;
@@ -62,6 +62,7 @@ assign id_memData = rfRt;
 
 
 // secondary decoding
+wire [31:0] pcAdd4 = id_pc + 'h4;
 always @ *
 begin
     case(aluSrcA)
@@ -80,14 +81,15 @@ begin
     case(rfDst)
     'h0: id_rfDst <= id_inst[15:11]; // RD
     'h1: id_rfDst <= id_inst[20:16]; // RT
+    'h2: id_rfDst <= 5'b0; // ZERO
     default: id_rfDst <= 5'b0;
     endcase
 
     case(id_branchType[4:3])
-    2'b00: id_branchDst <= id_pc + 'h4;
-    2'b01: id_branchDst <= id_pc + {{14{id_inst[15]}}, id_inst[15:0], 2'b0};
+    2'b00: id_branchDst <= pcAdd4;
+    2'b01: id_branchDst <= pcAdd4 + {{14{id_inst[15]}}, id_inst[15:0], 2'b0};
     2'b10: id_branchDst <= {id_pc[31:28], id_inst[25:0], 2'b0};
-    default: id_branchDst <= id_pc + 'h4;
+    default: id_branchDst <= pcAdd4;
     endcase
 end
 

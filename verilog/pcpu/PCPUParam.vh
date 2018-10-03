@@ -33,7 +33,7 @@
 
 
 // Register Files
-`define RF_DISABLE {`RF_WE_FALSE, `RF_DST_RD, `RF_SRC_ALU}
+`define RF_DISABLE {`RF_WE_FALSE, `RF_DST_ZERO, `RF_SRC_ALU}
 
 `define RF_WE_TRUE 1'b1
 `define RF_WE_FALSE 1'b0
@@ -41,6 +41,7 @@
 `define RF_DST_WIDTH 1:0
 `define RF_DST_RD 2'h0
 `define RF_DST_RT 2'h1
+`define RF_DST_ZERO 2'h2
 
 `define RF_SRC_WIDTH 1:0
 `define RF_SRC_ALU 2'h0

@@ -10,10 +10,8 @@
 `include "PCPUParam.vh"
 
 module StageEX(
-    // clock and reset
-    input wire clk, input wire rst,
-    // pc and instruction (won't use in this module but for debug)
-    input wire [31:0] id_pc,
+    // clock, reset and flush
+    input wire clk, input wire rst, input wire flush,
     // alu
     input wire [`ALU_OP_WIDTH] id_op,
     input wire [31:0] id_opa, input wire [31:0] id_opb,
@@ -35,7 +33,7 @@ reg [31:0] ex_opa, ex_opb;
 reg [`BRANCH_WIDTH] ex_branchType;
 always @ (posedge clk)
 begin
-    if (rst)
+    if (rst | flush)
     begin
         ex_op <= 0;
         ex_opa <= 0;
