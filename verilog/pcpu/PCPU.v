@@ -29,13 +29,14 @@ wire [`ALU_OP_WIDTH] id_op;
 wire [31:0] id_opa, id_opb;
 wire id_memWE;
 wire [31:0] id_memData;
-wire [31:0] rfRs, rfRt;
+wire [31:0] rfRs, rfRt, rfRs_forwarding, rfRt_forwarding;
 wire id_rfWE;
 wire [4:0] id_rfDst;
 wire [`RF_SRC_WIDTH] id_rfSrc;
 wire [`BRANCH_WIDTH] id_branchType;
 wire [31:0] id_branchDst;
 // stage EX signals
+wire [31:0] ex_inst;
 wire [31:0] ex_opResult;
 wire ex_memWE;
 wire [31:0] ex_memData;
@@ -45,6 +46,7 @@ wire [`RF_SRC_WIDTH] ex_rfSrc;
 wire ex_branchPermit;
 wire [31:0] ex_branchDst;
 // stage MEM signals
+wire [31:0] mem_inst;
 wire [31:0] mem_opResult;
 wire [31:0] mem_memData;
 wire mem_rfWE;
@@ -52,16 +54,6 @@ wire [4:0] mem_rfDst;
 wire [`RF_SRC_WIDTH] mem_rfSrc;
 // stage WB signals
 wire [31:0] wb_rfSrcData;
-
-
-// hazard
-wire ex_hazard = ((id_inst[25:21] != 5'b0) && (id_inst[25:21] == ex_rfDst))
-        || ((id_inst[20:16] != 5'b0) && (id_inst[20:16] == ex_rfDst));
-wire mem_hazard = ((id_inst[25:21] != 5'b0) && (id_inst[25:21] == mem_rfDst))
-        || ((id_inst[20:16] != 5'b0) && (id_inst[20:16] == mem_rfDst));
-wire id_stall = ex_hazard | mem_hazard | ex_branchPermit;
-wire if_stall = ex_hazard | mem_hazard;
-wire ex_flush = id_stall;
 
 
 // stage IF
@@ -81,8 +73,18 @@ StageID stageID(.clk(clk), .rst(rst), .stall(id_stall),
     .id_pc(id_pc), .id_inst(id_inst),
     .id_op(id_op), .id_opa(id_opa), .id_opb(id_opb),
     .id_memWE(id_memWE), .id_memData(id_memData),
-    .rfRs(rfRs), .rfRt(rfRt), .id_rfWE(id_rfWE), .id_rfDst(id_rfDst), .id_rfSrc(id_rfSrc),
+    .rfRs(rfRs_forwarding), .rfRt(rfRt_forwarding),
+    .id_rfWE(id_rfWE), .id_rfDst(id_rfDst), .id_rfSrc(id_rfSrc),
     .id_branchType(id_branchType), .id_branchDst(id_branchDst));
+// forwarding
+Forwarding forwarding(.ex_inst(ex_inst), .mem_inst(mem_inst),
+    .id_rs(id_inst[25:21]), .id_rt(id_inst[20:16]),
+    .ex_rfDst(ex_rfDst), .mem_rfDst(mem_rfDst),
+    .ex_branchPermit(ex_branchPermit),
+    .rs(rfRs), .rt(rfRt),
+    .ex_forwarding(ex_opResult), .mem_forwarding(mem_opResult),
+    .if_stall(if_stall), .id_stall(id_stall), .ex_flush(ex_flush),
+    .rfRs_forwarding(rfRs_forwarding), .rfRt_forwarding(rfRt_forwarding));
 // Register files
 RegFile RF(.clk(clk), .rst(rst),
     .addrA(id_inst[25:21]), .addrB(id_inst[20:16]),
@@ -97,6 +99,7 @@ BranchCtrl BC(.pc(if_pc),
 
 // stage EX
 StageEX stageEX(.clk(clk), .rst(rst), .flush(ex_flush),
+    .id_inst(id_inst), .ex_inst(ex_inst),
     .id_op(id_op), .id_opa(id_opa), .id_opb(id_opb), .ex_opResult(ex_opResult),
     .id_memWE(id_memWE), .ex_memWE(ex_memWE),
     .id_memData(id_memData), .ex_memData(ex_memData),
@@ -110,6 +113,7 @@ StageEX stageEX(.clk(clk), .rst(rst), .flush(ex_flush),
 assign addrData = mem_opResult;
 assign dataOut = mem_memData;
 StageMEM stageMEM(.clk(clk), .rst(rst),
+    .ex_inst(ex_inst), .mem_inst(mem_inst),
     .ex_opResult(ex_opResult), .mem_opResult(mem_opResult),
     .ex_memWE(ex_memWE), .mem_memWE(memWE),
     .ex_memData(ex_memData), .mem_memData(mem_memData),

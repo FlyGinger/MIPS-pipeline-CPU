@@ -22,26 +22,10 @@ sll $t0, $t0, 16            # 00084400
 ori $t1, $zero, 0x1000      # 34091012
 sll $t1, $t1, 16            # 00094C00
 ori $t1, $t1, 0x2580        # 3529C000
-addi $t2, $zero, 0x200
+addi $t2, $zero, 0x01
 clear:
-lw $t3, 0($t2)
-addi $t4, $zero, 0xff
-and $t5, $t3, $t4
-sll $t4, $t4, 8
-and $t6, $t3, $t4
-srl $t6, $t6, 8
-sll $t4, $t4, 8
-and $t7, $t3, $t4
-srl $t7, $t7, 16
-sll $t4, $t4, 8
-and $t8, $t3, $t4
-srl $t8, $t8, 24
-sw $t5, 12($t0)              # AD000000
-sw $t6, 8($t0)
-sw $t7, 4($t0)
-sw $t8, 0($t0)
-addi $t2, $t2, 4
-addi $t0, $t0, 16           # 21080010
+sw $t2, 0($t0)
+addi $t0, $t0, 4            # 21080010
 bne $t0, $t1, clear         # 1509FFF9
 # keyboard input?
 ori $s0, $zero, 0xf000      # 3410F000
@@ -94,43 +78,3 @@ lw $t3, 0($s0)              # 8E0B0000
 addi $t3, $t3, 1            # 216B0001
 sw $t3, 0($s0)              # AE0B0000
 j keyboard                  # 08000068
-
-.data 0x200
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.ascii "This is a test for the lw instruction. Is it working correctly? I don't know.\0\0\0"
-.ascii "\0This is a test for the lw instruction. Is it working correctly? I don't know.\0\0"
-.ascii "\0\0This is a test for the lw instruction. Is it working correctly? I don't know.\0"
-.ascii "\0\0\0This is a test for the lw instruction. Is it working correctly? I don't know."
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101
-.word 0x01010101, 0x01010101, 0x01010101, 0x01010101

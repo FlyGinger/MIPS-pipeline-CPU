@@ -2,7 +2,7 @@
 
 ### Intro
 
-Now, this is a stall 5-stage pipeline CPU with 1 branch delay slot, which means that the CPU will stall when hazards occur.
+Now, this is a 5-stage pipeline CPU with 1 branch delay slot, which means that the CPU will "forwarding" when hazards occur.
 
 No bugs with demo program, but no further guarantee.
 
@@ -16,7 +16,7 @@ Your input will echo on the screen, but control keys are not implemented.
 
 ### 简介
 
-现在，这是一个阻塞的有一周期跳转指令延迟槽的5阶段流水线CPU。CPU会在遇到冲突时阻塞。
+现在，这是一个有一周期跳转指令延迟槽的5阶段流水线CPU。CPU会在遇到冲突时会进行“forwarding”。
 
 Demo程序没有问题，但不保证其他程序同样没有问题。
 

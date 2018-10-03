@@ -12,6 +12,8 @@
 module StageMEM(
     // clock and reset
     input wire clk, input wire rst,
+    // instruction
+    input wire [31:0] ex_inst, output reg [31:0] mem_inst,
     // alu result
     input wire [31:0] ex_opResult, output reg [31:0] mem_opResult,
     input wire [31:0] ex_memData, output reg [31:0] mem_memData,
@@ -27,6 +29,7 @@ always @ (posedge clk)
 begin
     if (rst)
     begin
+        mem_inst <= 0;
         mem_opResult <= 0;
         mem_memWE <= 0;
         mem_memData <= 0;
@@ -36,6 +39,7 @@ begin
     end
     else
     begin
+        mem_inst <= ex_inst;
         mem_opResult <= ex_opResult;
         mem_memWE <= ex_memWE;
         mem_memData <= ex_memData;
