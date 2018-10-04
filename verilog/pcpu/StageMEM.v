@@ -19,6 +19,7 @@ module StageMEM(
     input wire [31:0] ex_memData, output reg [31:0] mem_memData,
     // memory
     input wire ex_memWE, output reg mem_memWE,
+    input wire ex_memRE, output reg mem_memRE,
     // register files: pass
     input wire ex_rfWE, input wire [4:0] ex_rfDst, input wire [`RF_SRC_WIDTH] ex_rfSrc,
     output reg mem_rfWE, output reg [4:0] mem_rfDst, output reg  [`RF_SRC_WIDTH] mem_rfSrc
@@ -32,6 +33,7 @@ begin
         mem_inst <= 0;
         mem_opResult <= 0;
         mem_memWE <= 0;
+        mem_memRE <= 0;
         mem_memData <= 0;
         mem_rfWE <= 0;
         mem_rfDst <= 0;
@@ -42,6 +44,7 @@ begin
         mem_inst <= ex_inst;
         mem_opResult <= ex_opResult;
         mem_memWE <= ex_memWE;
+        mem_memRE <= ex_memRE;
         mem_memData <= ex_memData;
         mem_rfWE <= ex_rfWE;
         mem_rfDst <= ex_rfDst;

@@ -11,7 +11,7 @@ module IOBus(
     input wire clk, input wire rst,
     // CPU
     input wire [31:0] addr4CPU, output reg [31:0] data2CPU,
-    input wire we4CPU, input wire [31:0] data4CPU,
+    input wire re4CPU, input wire we4CPU, input wire [31:0] data4CPU,
     // RAM
     output wire [11:0] addr2RAM, input wire [31:0] data4RAM,
     output wire we2RAM, output wire [31:0] data2RAM,
@@ -107,7 +107,7 @@ begin
         KBDread <= 0;
     else
     begin
-        if (KBDready && addr4CPU == 32'hf0000014)
+        if (KBDready && addr4CPU == 32'hf0000014 && re4CPU)
             KBDread <= 1;
         else if (!KBDready)
             KBDread <= 0;

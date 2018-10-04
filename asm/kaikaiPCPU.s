@@ -1,46 +1,31 @@
 nop
 nop
 # set forecolor: black
-ori $t0, $zero, 0xf000      # 3408F000
-sll $t0, $t0, 16            # 00084400
-ori $t0, $t0, 0x000c        # 3508000C
+li $t0, 0xf000000c
 sw $zero, 0($t0)            # AD000000
 # set background color: white
-ori $t0, $zero, 0xf000      # 3408F000
-sll $t0, $t0, 16            # 00084400
-ori $t0, $t0, 0x0010        # 35080010
+li $t0, 0xf0000010
 ori $t1, $zero, 0xfff       # 34090FFF
 sw $t1, 0($t0)              # AD090000
 # set vga mode: text
-ori $t0, $zero, 0xf000      # 3408F000
-sll $t0, $t0, 16            # 00084400
-ori $t0, $t0, 0x0008        # 35080008
+li $t0, 0xf0000008
 sw $zero, 0($t0)            # AD000000
 # clear the screen
-ori $t0, $zero, 0x1000      # 34081000
-sll $t0, $t0, 16            # 00084400
-ori $t1, $zero, 0x1000      # 34091012
-sll $t1, $t1, 16            # 00094C00
-ori $t1, $t1, 0x2580        # 3529C000
+lui $t0, 0x1000
+li $t1, 0x10002580
 addi $t2, $zero, 0x01
 clear:
 sw $t2, 0($t0)
 addi $t0, $t0, 4            # 21080010
 bne $t0, $t1, clear         # 1509FFF9
 # keyboard input?
-ori $s0, $zero, 0xf000      # 3410F000
-sll $s0, $s0, 16            # 00108400
-ori $s0, $s0, 0x0004        # 36100004
+li $s0, 0xf0000004
 sw $zero, 0($s0)            # AE000000
 add $gp, $zero, $zero       # 0000E020
-ori $sp, $zero, 0x1000      # 341D1000
-sll $sp, $sp, 16            # 001DEC00
-ori $t0, $zero, 0xf000      # 3408F000
-sll $t0, $t0, 16            # 00084400
-ori $t0, $t0, 0x0018        # 35080018
-ori $t1, $zero, 0xf000      # 3409F000
-sll $t1, $t1, 16            # 00094C00
-ori $t1, $t1, 0x0014        # 35290014
+lui $sp, 0x1000
+li $t0, 0xf0000018
+li $t1, 0xf0000014
+
 keyboard:
 lw $t2, 0($t0)              # 8D0A0000
 beq $t2, $zero, keyboard    # 1140FFFC

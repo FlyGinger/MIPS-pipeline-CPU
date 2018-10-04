@@ -30,6 +30,7 @@ module kaikaiPCPU(
 wire [31:0] addrInst;
 wire [31:0] addr4CPU2Bus, data4CPU2Bus;
 wire we4CPU2Bus;
+wire re4CPU2Bus;
 // IO Bus
 wire [11:0] addr4Bus2RAM;
 wire [18:0] addr4Bus2VRAM;
@@ -62,13 +63,13 @@ wire [18:0] addr4VGA2VRAM;
 PCPU CPU(.clk(clk50mhz), .rst(rst),
     .addrInst(addrInst), .instIn(instIn),
     .addrData(addr4CPU2Bus), .dataIn(data4Bus2CPU),
-    .memWE(we4CPU2Bus), .dataOut(data4CPU2Bus));
+    .memRE(re4CPU2Bus), .memWE(we4CPU2Bus), .dataOut(data4CPU2Bus));
 
 
 // I/O bus
 IOBus Bus(.clk(clk50mhz), .rst(rst),
     .addr4CPU(addr4CPU2Bus), .data2CPU(data4Bus2CPU),
-    .we4CPU(we4CPU2Bus), .data4CPU(data4CPU2Bus),
+    .re4CPU(re4CPU2Bus), .we4CPU(we4CPU2Bus), .data4CPU(data4CPU2Bus),
     .addr2RAM(addr4Bus2RAM), .data4RAM(data4RAM2Bus),
     .we2RAM(we4Bus2RAM), .data2RAM(data4Bus2RAM),
     .addr2VRAM(addr4Bus2VRAM), .data4VRAM(data4VRAM2Bus),
@@ -116,7 +117,7 @@ ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 wire [31:0] data2seg;
 MUX8T1 seg(.S(SW[7:5]),
     .I0(instIn), .I1(addrInst), .I2(data4Bus2CPU), .I3(addr4CPU2Bus),
-    .I4(data4CPU2Bus), .I5(forecolor), .I6(backcolor), .I7(seg7led),
+    .I4(data4CPU2Bus), .I5({23'h0, KBDready, scancode}), .I6(backcolor), .I7(seg7led),
     .O(data2seg));
 Seg7LED seg7(.clk(clk50mhz), .rst(rst),
     .start(clkdiv[21]), .text(SW[0]),

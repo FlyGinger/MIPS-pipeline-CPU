@@ -10,26 +10,41 @@
 `include "PCPUParam.vh"
 
 module BranchCtrl(
+    // clock and reset
+    input wire clk, input wire rst,
     // current pc
     input wire [31:0] pc,
-    // ID: j type
-    input wire id_branchPermit, input wire [31:0] id_branchDst,
-    // EX: b type
-    input wire ex_branchPermit, input wire [31:0] ex_branchDst,
+    // ID
+    input wire [`BRANCH_WIDTH] id_branchType, input wire [31:0] id_branchDst,
+    // EX
+    input wire [`BRANCH_WIDTH] ex_branchType, input wire ex_branchPermit,
     // output
-    output reg [31:0] pcNext
+    output reg [31:0] pcNext, output wire id_flush
     );
+
+
+wire [31:0] pcPredict;
+wire id_branchJ = (id_branchType[4:3] == 2'b10);
+wire id_branchB = (id_branchType[4:3] == 2'b01);
+wire ex_branchB = (ex_branchType[4:3] == 2'b01);
 
 
 always @ *
 begin
-    if (id_branchPermit)
+    if (id_branchJ) // jump
         pcNext <= id_branchDst;
-    else if (ex_branchPermit)
-        pcNext <= ex_branchDst;
-    else
+    else if (id_branchB | ex_branchB) // predict
+        pcNext <= pcPredict;
+    else // normal
         pcNext <= pc + 'h4;
 end
+
+
+BranchPredict BP(.clk(clk), .rst(rst),
+    .pc(pc),
+    .id_branchB(id_branchB), .id_branchDst(id_branchDst),
+    .ex_branchB(ex_branchB), .ex_branchPermit(ex_branchPermit),
+    .pcNext(pcPredict), .id_flush(id_flush));
 
 
 endmodule
