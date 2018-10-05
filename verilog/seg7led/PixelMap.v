@@ -1,23 +1,8 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2018/08/27 16:04:33
-// Design Name: 
-// Module Name: PixelMap
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Hex Map to Pixel
+ * @author Zengkai Jiang
+ * @date 2018.08.27
+ */
 
 
 module PixelMap(

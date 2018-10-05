@@ -1,23 +1,9 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2018/08/27 15:50:59
-// Design Name: 
-// Module Name: Hex2Seg
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Hex to Segment
+ * convert 32 bits hexadecimal to segment signals
+ * @author Zengkai Jiang
+ * @date 2018.08.27
+ */
 
 
 module Hex2Seg(

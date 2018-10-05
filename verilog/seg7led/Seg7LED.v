@@ -1,10 +1,8 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:    Zengkai Jiang
-// Create Date: 2018/08/27 15:23:13
-// Module Name: Seg7LED
-// Revision 0.01 - File Created
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * 7 Segment LED
+ * @author Zengkai Jiang
+ * @date 2018.08.27
+ */
 
 
 module Seg7LED(
@@ -42,10 +40,10 @@ PixelMap M1(
 
 
 MUX2T1#(.WIDTH(64)) M2(
-    .S(text),
-    .I0(pixel_seg),
-    .I1(hex_seg),
-    .O(seg));
+    .s(text),
+    .i0(pixel_seg),
+    .i1(hex_seg),
+    .o(seg));
 
 
 P2S#(.DATA_BITS(64), .DIR(0)) M3(

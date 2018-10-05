@@ -1,23 +1,8 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2018/08/28 15:52:51
-// Design Name: 
-// Module Name: Keyboard
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Keyboard Control
+ * @author Zengkai Jiang
+ * @date 2018.08.28
+ */
 
 
 module Keyboard(

@@ -1,11 +1,11 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Zengkai Jiang
-// Create Date:    19:00:25 09/30/2018 
-// Module Name:    kaikaiPCPU 
-// Description:    naive PCPU
-// Revision 0.01 - File Created
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Top Module
+ * based SWORD V4 (educational platform designed by Zhejiang University)
+ * @author Zengkai Jiang
+ * @date 2018.10.05
+ */
+
+
 module kaikaiPCPU(
     input wire CLK_200MHZ_P,
     input wire CLK_200MHZ_N,
@@ -31,12 +31,17 @@ wire [31:0] addrInst;
 wire [31:0] addr4CPU2Bus, data4CPU2Bus;
 wire we4CPU2Bus;
 wire re4CPU2Bus;
+// Cache
+wire [31:0] cache_addr;
+wire cache_re;
+wire [31:0] cache_data_o;
+wire cache_we;
+wire [31:0] cache_data_i;
+wire cache_stall;
 // IO Bus
-wire [11:0] addr4Bus2RAM;
 wire [18:0] addr4Bus2VRAM;
-wire we4Bus2RAM, we4Bus2VRAM;
+wire we4Bus2VRAM;
 wire [31:0] data4Bus2CPU;
-wire [31:0] data4RAM2Bus, data4Bus2RAM;
 wire [11:0] data4VRAM2Bus, data4Bus2VRAM;
 wire [31:0] addr4Bus2ROM, data4ROM2Bus;
 wire [31:0] seg7led;
@@ -52,26 +57,33 @@ wire [11:0] data4VRAM2VGA;
 wire rst = ~RSTN;
 wire clk50mhz, clk50mhzn, clk25mhz, clk200mhz, clk100mhz;
 wire [31:0] clkdiv;
-// wire clkcpu = SW[1] ? clk50mhz : clkdiv[28];
-// wire clkio = SW[1] ? clk50mhzn : ~clkdiv[28];
+
 
 // VGA
 wire [18:0] addr4VGA2VRAM;
 
 
 // pipeline CPU
-PCPU CPU(.clk(clk50mhz), .rst(rst),
-    .addrInst(addrInst), .instIn(instIn),
-    .addrData(addr4CPU2Bus), .dataIn(data4Bus2CPU),
-    .memRE(re4CPU2Bus), .memWE(we4CPU2Bus), .dataOut(data4CPU2Bus));
+PCPU CPU(.clk(clk50mhz), .rst(rst), .cache_stall(cache_stall),
+    .inst_addr(addrInst), .inst_in(instIn), .inst_re(),
+    .data_addr(addr4CPU2Bus), .data_in(data4Bus2CPU),
+    .data_re(re4CPU2Bus), .data_we(we4CPU2Bus), .data_out(data4CPU2Bus));
+
+
+// cache
+Cache cache(.clk(clk50mhzn), .rst(rst),
+    .addr(cache_addr),
+    .re(cache_re), .data_o(cache_data_o),
+    .we(cache_we), .data_i(cache_data_i),
+    .cache_stall(cache_stall));
 
 
 // I/O bus
 IOBus Bus(.clk(clk50mhz), .rst(rst),
     .addr4CPU(addr4CPU2Bus), .data2CPU(data4Bus2CPU),
     .re4CPU(re4CPU2Bus), .we4CPU(we4CPU2Bus), .data4CPU(data4CPU2Bus),
-    .addr2RAM(addr4Bus2RAM), .data4RAM(data4RAM2Bus),
-    .we2RAM(we4Bus2RAM), .data2RAM(data4Bus2RAM),
+    .addr2Cache(cache_addr), .re2Cache(cache_re), .data4Cache(cache_data_o),
+    .we2Cache(cache_we), .data2Cache(cache_data_i),
     .addr2VRAM(addr4Bus2VRAM), .data4VRAM(data4VRAM2Bus),
     .we2VRAM(we4Bus2VRAM), .data2VRAM(data4Bus2VRAM),
     .addr2ROM(addr4Bus2ROM), .data4ROM(data4ROM2Bus),
@@ -82,18 +94,17 @@ IOBus Bus(.clk(clk50mhz), .rst(rst),
 
 
 // RAM
-wire [11:0] addrReprog;
+wire [9:0] addrReprog;
 wire [31:0] dataReprog;
 wire weReprog;
-RAM ram(
-    .clka(clk50mhzn), .wea(1'b0), .addra(addrInst[13:2]), .dina(32'b0), .douta(instIn),
-    .clkb(clk50mhzn), .web(weReprog), .addrb(addrReprog),
-    .dinb(dataReprog), .doutb(data4RAM2Bus));
-Reprog reprog(.clkUART(clk100mhz), .clkMem(clk50mhzn),
+RAM_inst ram_inst(
+    .clka(clk50mhzn), .wea(weReprog), .addra(addrReprog),
+    .dina(dataReprog), .douta(instIn));
+Reprog#(.ADDR_WIDTH(10)) reprog(.clkUART(clk100mhz), .clkMem(clk50mhzn),
     .uartRx(UART_RX), .progEN(rst),
-    .addrIn(addr4Bus2RAM), .addrOut(addrReprog),
-    .dataIn(data4Bus2RAM), .dataOut(dataReprog),
-    .weIn(we4Bus2RAM), .weOut(weReprog));
+    .addrIn(addrInst[11:2]), .addrOut(addrReprog),
+    .dataIn(0), .dataOut(dataReprog),
+    .weIn(0), .weOut(weReprog));
 
 
 // VRAM
@@ -115,10 +126,10 @@ ClkDiv clkDiv(.clk(clk200mhz), .clkdiv(clkdiv));
 
 // 7-segment LED
 wire [31:0] data2seg;
-MUX8T1 seg(.S(SW[7:5]),
-    .I0(instIn), .I1(addrInst), .I2(data4Bus2CPU), .I3(addr4CPU2Bus),
-    .I4(data4CPU2Bus), .I5({23'h0, KBDready, scancode}), .I6(backcolor), .I7(seg7led),
-    .O(data2seg));
+MUX8T1 seg(.s(SW[7:5]),
+    .i0(instIn), .i1(addrInst), .i2(data4Bus2CPU), .i3(addr4CPU2Bus),
+    .i4(data4CPU2Bus), .i5({23'h0, KBDready, scancode}), .i6(backcolor), .i7(seg7led),
+    .o(data2seg));
 Seg7LED seg7(.clk(clk50mhz), .rst(rst),
     .start(clkdiv[21]), .text(SW[0]),
     .flash(1'b0), .hexs(data2seg), .points(8'b0), .LES(8'b0),

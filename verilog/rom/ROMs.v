@@ -1,11 +1,10 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Zengkai Jiang
-// Create Date:    20:58:53 09/30/2018 
-// Module Name:    ROMs 
-// Description:    ROM controller
-// Revision 0.01 - File Created
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * ROM Controller
+ * @author Zengkai Jiang
+ * @date 2018.10.05
+ */
+
+
 module ROMs(
     input wire clk,
     input wire [31:0] addr,

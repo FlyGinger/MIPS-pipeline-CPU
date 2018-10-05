@@ -1,95 +1,105 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Zengkai Jiang
-// Create Date:    17:07:45 10/03/2018 
-// Module Name:    BranchPredict
-// Description:    branch prediction using bimodal predictor
-// Revision 0.01 - File Created 17:07:45 10/03/2018 
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Branch Predict Unit
+ * predict whether it meets the conditions of branch instruction
+ * dynamic prediction using saturating counter (also called bimodal predictor)
+ * @author Zengkai Jiang
+ * @date 2018.10.05
+ */
 
-`include "PCPUParam.vh"
 
+`include "PCPU.vh"
 module BranchPredict(
     // clock and reset
-    input wire clk, input wire rst,
-    // pc
-    input wire [31:0] pc,
-    // branch
-    input wire id_branchB, input wire [31:0] id_branchDst,
-    // actual
-    input wire ex_branchB, input wire ex_branchPermit,
+    input clk, input rst,
+    // current pc
+    input [31:0] pc,
+    // branch type
+    input [`BRANCH_WIDTH] id_branch_type, input [31:0] id_branch_dst,
+    input [`BRANCH_WIDTH] ex_branch_type, input ex_branch_permit,
     // output
-    output reg [31:0] pcNext, output wire id_flush
-);
+    output reg [31:0] pc_next, output id_flush
+    );
 
 
-reg [1:0] counter[2047:0]; // predict history
-
-wire [31:0] pcAdd4 = pc + 'h4;
-reg [11:0] pc_hash0; // hash(pc)
-reg [11:0] pc_hash1; // buffer
-
-reg [1:0] item0; // predict item
-reg [1:0] item1; // buffer
-reg [1:0] itemNew; // new item
-
-wire prediction0 = item0[1]; // prediction, 1 for branch, 0 for not branch
-reg prediction1; // buffer
-
-reg [31:0] counter_predict; // the opposite of prediction
-wire wrong_predict = ex_branchB && (prediction1 ^ ex_branchPermit);
-assign id_flush = wrong_predict;
-
-integer i;
-always @ (posedge clk)
-begin
-    if (rst)
-        for (i = 0; i < 2048; i = i + 1) counter[i] <= 0;
-    else if (ex_branchB)
-        counter[pc_hash1] <= itemNew;
-    item0 <= counter[pc[13:2]];
-end
+    wire [31:0] pc_add_4 = pc + 32'h4;
+    reg [31:0] pc_predict;
+    wire id_branch_j = (id_branch_type[4:3] == 2'b11) || (id_branch_type[4:3] == 2'b10);
+    wire id_branch_b = (id_branch_type[4:3] == 2'b01);
+    wire ex_branch_b = (ex_branch_type[4:3] == 2'b01);
 
 
-always @ (posedge clk)
-begin
-    if (rst)
-    begin
-        pc_hash0 <= 0;
-        pc_hash1 <= 0;
-        item1 <= 0;
-        prediction1 <= 0;
-        counter_predict <= 0;
+    always @ * begin
+        if (id_branch_j)
+            pc_next <= id_branch_dst;
+        else if (id_branch_b | ex_branch_b)
+            pc_next <= pc_predict;
+        else
+            pc_next <= pc_add_4;
     end
-    else
-    begin
-        pc_hash0 <= pc[13:2];
-        pc_hash1 <= pc_hash0;
-        item1 <= item0;
-        prediction1 <= prediction0;
-        counter_predict <= prediction0 ? pcAdd4 : id_branchDst;
+
+
+    // predict history
+    reg [1:0] counter[1023:0];
+    reg [10:0] pc_hash0;
+    reg [10:0] pc_hash1;
+    reg [1:0] item0;
+    reg [1:0] item1;
+    reg [1:0] item_new;
+    wire prediction0 = item0[1];
+    reg prediction1;
+    reg [31:0] counter_predict;
+    wire wrong_predict = ex_branch_b && (prediction1 ^ ex_branch_permit);
+    assign id_flush = wrong_predict;
+
+
+    integer i;
+    always @ (posedge clk) begin
+        if (rst) begin
+            for (i = 0; i < 1024; i = i + 1)
+                counter[i] <= 0;
+        end
+        else begin
+            if (ex_branch_b)
+                counter[pc_hash1] <= item_new;
+            item0 <= counter[pc[11:2]];
+        end
     end
-end
 
 
-always @ *
-begin
-    if (id_branchB)
-        pcNext <= prediction0 ? id_branchDst : pcAdd4;
-    else
-        pcNext <= wrong_predict ? counter_predict : pcAdd4;
-end
+    always @ (posedge clk) begin
+        if (rst) begin
+            pc_hash0 <= 0;
+            pc_hash1 <= 0;
+            item1 <= 0;
+            prediction1 <= 0;
+            counter_predict <= 0;
+        end
+        else begin
+            pc_hash0 <= pc[11:2];
+            pc_hash1 <= pc_hash0;
+            item1 <= item0;
+            prediction1 <= prediction0;
+            counter_predict <= prediction0 ? pc_add_4 : id_branch_dst;
+        end
+    end
+    
+
+    always @ * begin
+        if (id_branch_b)
+            pc_predict <= prediction0 ? id_branch_dst : pc_add_4;
+        else
+            pc_predict <= wrong_predict ? counter_predict : pc_add_4;
+    end
 
 
-always @ *
-begin
-    case (item1)
-    2'b00: if (ex_branchPermit) itemNew <= 2'b01; else itemNew <= 2'b00;
-    2'b01: if (ex_branchPermit) itemNew <= 2'b10; else itemNew <= 2'b00;
-    2'b10: if (ex_branchPermit) itemNew <= 2'b11; else itemNew <= 2'b01;
-    2'b11: if (ex_branchPermit) itemNew <= 2'b11; else itemNew <= 2'b10;
-    endcase
-end
+    always @ * begin
+        case (item1)
+        2'b00: if (ex_branch_permit) item_new <= 2'b01; else item_new <= 2'b00;
+        2'b01: if (ex_branch_permit) item_new <= 2'b10; else item_new <= 2'b00;
+        2'b10: if (ex_branch_permit) item_new <= 2'b11; else item_new <= 2'b01;
+        2'b11: if (ex_branch_permit) item_new <= 2'b11; else item_new <= 2'b10;
+        endcase
+    end
 
 
 endmodule

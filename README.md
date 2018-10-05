@@ -6,6 +6,8 @@ Now, this is a 5-stage pipeline CPU with 1 branch delay slot using bimodal predi
 
 No bugs with demo program, but no further guarantee.
 
+Cache module has been implemented, but has some bugs.
+
 ### Demo Program
 
 You need a ps2 keyboard.
@@ -19,6 +21,8 @@ Your input will echo on the screen, but control keys are not implemented.
 现在，这是一个使用饱和计数器来进行动态分支预测的有1周期跳转指令延迟槽的5阶段流水线CPU。
 
 Demo程序没有问题，但不保证其他程序同样没有问题。
+
+Cache已经实现了，但是好像有点bug。
 
 ### Demo程序
 

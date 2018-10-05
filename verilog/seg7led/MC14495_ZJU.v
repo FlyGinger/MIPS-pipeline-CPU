@@ -1,23 +1,9 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2018/08/27 15:56:41
-// Design Name: 
-// Module Name: MC14495_ZJU
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Hex to Segment
+ * convert 4 bits hexadecimal to segment signals
+ * @author Zengkai Jiang
+ * @date 2018.08.27
+ */
 
 
 module MC14495_ZJU(

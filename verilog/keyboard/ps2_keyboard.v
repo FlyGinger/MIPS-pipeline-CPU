@@ -19,8 +19,8 @@ module ps2_keyboard (clk,clrn,ps2_clk,ps2_data,rdn,data,ready,overflow);
     always @ (posedge clk)
         ps2_clk_sync <= {ps2_clk_sync[2:0],ps2_clk};   // shift ps2_clk_sync left
     wire sampling = ps2_clk_sync[3] &                  // 1
-	            ps2_clk_sync[2] &                  // 1
-	           ~ps2_clk_sync[1] &                  // 0
+	            ps2_clk_sync[2] &                      // 1
+	           ~ps2_clk_sync[1] &                      // 0
                    ~ps2_clk_sync[0];                   // 0: 1100: had a falling edge
     always @ (posedge clk) begin
         if (!clrn) begin                               // on reset

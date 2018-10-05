@@ -12,9 +12,9 @@ module IOBus(
     // CPU
     input wire [31:0] addr4CPU, output reg [31:0] data2CPU,
     input wire re4CPU, input wire we4CPU, input wire [31:0] data4CPU,
-    // RAM
-    output wire [11:0] addr2RAM, input wire [31:0] data4RAM,
-    output wire we2RAM, output wire [31:0] data2RAM,
+    // Cache
+    output wire [31:0] addr2Cache, output wire re2Cache, input wire [31:0] data4Cache,
+    output wire we2Cache, output wire [31:0] data2Cache,
     // VRAM
     output wire [18:0] addr2VRAM, input wire [11:0] data4VRAM,
     output wire we2VRAM, output wire [11:0] data2VRAM,
@@ -45,7 +45,7 @@ module IOBus(
 always @ *
 begin
     casex(addr4CPU)
-    32'h0xxxxxxx: data2CPU <= data4RAM;
+    32'h0xxxxxxx: data2CPU <= data4Cache;
     32'h1xxxxxxx: data2CPU <= {20'h0, data4VRAM};
     32'h2xxxxxxx: data2CPU <= data4ROM;
     32'hf0000000: data2CPU <= {16'h0, switch};
@@ -60,10 +60,11 @@ begin
 end
 
 
-// RAM
-assign addr2RAM = addr4CPU[13:2];
-assign we2RAM = (addr4CPU[31:28] == 4'h0) ? we4CPU : 1'b0;
-assign data2RAM = data4CPU;
+// Cache
+assign addr2Cache = addr4CPU;
+assign re2Cache = (addr4CPU[31:28] == 0) && re4CPU;
+assign we2Cache = (addr4CPU[31:28] == 0) && we4CPU;
+assign data2Cache = data4CPU;
 
 
 // VRAM

@@ -1,10 +1,8 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:    Zengkai Jiang
-// Create Date: 2017/12/08 23:56:54
-// Module Name: VGA
-// Revision 0.01 - File Created
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * VGA Controller
+ * @author Zengkai Jiang
+ * @date 2018.08.27
+ */
 
 
 module VGAController(

@@ -1,42 +1,42 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Engineer:       Zengkai Jiang
-// Create Date:    2018/08/27 23:12:20
-// Module Name:    RegFile
-// Description:    register files
-// Revision 0.01 - File Created 2018/08/27 23:12:20
-//////////////////////////////////////////////////////////////////////////////////
+/**
+ * Register Files
+ * 32 32-bit registers
+ * @author Zengkai Jiang
+ * @date 2018.10.04
+ */
 
 
 module RegFile(
-    input wire clk,
-    input wire rst, // reset, active high
-    input wire [4:0] addrA, // A port address
-    input wire [4:0] addrB, // B port address
-    input wire we, // write enable
-    input wire [4:0] addrW, // W port address
-    input wire [31:0] dataW, // W port data
-    output wire [31:0] dataA, // A port data
-    output wire [31:0] dataB // B port data
+    // clock and reset
+    input clk, input rst,
+    // write port
+    input we, input [4:0] waddr, input [31:0] wdata,
+    // read port A
+    input rea, input [4:0] raddra, output [31:0] rdataa,
+    // read port B
+    input reb, input [4:0] raddrb, output [31:0] rdatab
     );
 
 
-reg [31:0] register[1:31];
-integer i;
-always @ (posedge clk or posedge rst)  begin
-    if (rst) begin
-        for (i = 1; i < 32; i = i + 1) begin
-            register[i] <= 32'b0;
+    // registers
+    reg [31:0] regs [1:31];
+
+
+    // write port
+    integer i;
+    always @ (posedge clk) begin
+        if (rst) begin
+            for (i = 1; i < 32; i = i + 1)
+                regs[i] <= 32'b0;
         end
+        else if (we && (waddr != 5'b0))
+            regs[waddr] <= wdata;
     end
-    else begin
-        if (addrW != 0 && we == 1) begin
-            register[addrW] <= dataW;
-        end
-    end
-end
-assign dataA = (addrA == 0) ? 32'b0 : register[addrA];
-assign dataB = (addrB == 0) ? 32'b0 : register[addrB];
+
+
+    // read port
+    assign rdataa = (rea && (raddra != 5'b0)) ? regs[raddra] : 31'b0;
+    assign rdatab = (reb && (raddrb != 5'b0)) ? regs[raddrb] : 32'b0;
 
 
 endmodule
