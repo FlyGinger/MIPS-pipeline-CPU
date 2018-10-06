@@ -69,7 +69,7 @@ module WriteBack(
                             counter <= 0;
                             done <= 0;
                             main_mem_we <= 0;
-                            main_mem_addr <= 0;
+                            main_mem_addr <= {addr[31:5], 3'b0};
                             cache_data_addr <= 0;
                         end
             WRITEBACK:  begin
